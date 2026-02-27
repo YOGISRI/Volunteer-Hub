@@ -36,20 +36,15 @@ router.get("/:id/rating", async (req, res) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
-    .from("ratings")
-    .select("rating")
-    .eq("volunteer_id", id);
+    .from("users")
+    .select("rating_score")
+    .eq("id", id)
+    .single();
 
   if (error) return res.status(400).json({ error: error.message });
 
-  const avg =
-    data.length === 0
-      ? 0
-      : data.reduce((sum, r) => sum + r.rating, 0) / data.length;
-
   res.json({
-    average: avg.toFixed(1),
-    total: data.length
+    score: data.rating_score || 0
   });
 });
 router.get("/:id/streak", async (req, res) => {
@@ -101,6 +96,23 @@ router.get("/:id/streak", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get("/:id/hours", async (req, res) => {
+  const { id } = req.params;
 
+  const { data, error } = await supabase
+    .from("applications")
+    .select("hours, completed_at")
+    .eq("volunteer_id", id)
+    .eq("completed", true);
+
+  if (error) return res.status(400).json({ error: error.message });
+
+  const totalHours = data.reduce((sum, app) => sum + (app.hours || 0), 0);
+
+  res.json({
+    totalHours,
+    history: data
+  });
+});
 
 export default router;

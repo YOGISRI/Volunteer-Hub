@@ -39,14 +39,29 @@ router.post("/", verifyToken, async (req, res) => {
 // ✅ 2. Get All Opportunities (Public)
 router.get("/", async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { location, search } = req.query;
+
+    let query = supabase
       .from("opportunities")
       .select("*")
       .order("created_at", { ascending: false });
 
+    // 🔎 Filter by location
+    if (location) {
+      query = query.ilike("location", `%${location}%`);
+    }
+
+    // 🔍 Optional title search
+    if (search) {
+      query = query.ilike("title", `%${search}%`);
+    }
+
+    const { data, error } = await query;
+
     if (error) throw error;
 
     res.json(data);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -141,6 +156,9 @@ router.get("/org/applications", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// =============================
+// MARK COMPLETE / INCOMPLETE
+// =============================
 router.patch("/applications/:id/status", verifyToken, async (req, res) => {
   try {
     if (req.user.role !== "organization") {
@@ -149,33 +167,22 @@ router.patch("/applications/:id/status", verifyToken, async (req, res) => {
 
     const { status } = req.body;
 
-    // Get application first
-    const { data: application, error: fetchError } = await supabase
-      .from("applications")
-      .select("*")
-      .eq("id", req.params.id)
-      .single();
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
 
-    if (fetchError) throw fetchError;
-
-    // Update status
     const { data, error } = await supabase
       .from("applications")
       .update({ status })
       .eq("id", req.params.id)
-      .select();
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (error || !data) {
+      return res.status(400).json({ error: "Application not found" });
+    }
 
-    // 🔔 Notify volunteer
-    await supabase.from("notifications").insert([
-      {
-        user_id: application.volunteer_id,
-        message: `Your application was ${status}.`,
-      },
-    ]);
-
-    res.json(data[0]);
+    res.json(data);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -247,11 +254,55 @@ router.patch("/applications/:id/complete", verifyToken, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { completed, feedback } = req.body; // true or false
+    const { completed, hours } = req.body;
 
-    if (!feedback) {
-      return res.status(400).json({ error: "Feedback required" });
+    if (completed === undefined) {
+      return res.status(400).json({ error: "Completed value required" });
     }
+
+    // Fetch application
+    const { data: app, error: fetchError } = await supabase
+      .from("applications")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !app) {
+      return res.status(400).json({ error: "Application not found" });
+    }
+
+    // Always ensure status becomes approved
+    const { data, error } = await supabase
+      .from("applications")
+      .update({
+        status: "approved",
+        completed: completed,
+        hours: completed ? hours || 0 : 0,
+        completed_at: completed ? new Date() : null
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json(data);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+router.post("/applications/:id/rate", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "organization") {
+      return res.status(403).json({ error: "Only organizations allowed" });
+    }
+
+    const { id } = req.params;
+    const { feedback, type } = req.body; 
+    // type = "positive" OR "negative"
 
     const { data: app, error: fetchError } = await supabase
       .from("applications")
@@ -259,70 +310,42 @@ router.patch("/applications/:id/complete", verifyToken, async (req, res) => {
       .eq("id", id)
       .single();
 
-    if (fetchError) throw fetchError;
-
-    if (app.status !== "approved") {
-      return res.status(400).json({ error: "Application not approved" });
+    if (fetchError || !app) {
+      return res.status(400).json({ error: "Application not found" });
     }
 
-    // Update completion
-    const { error: updateError } = await supabase
-      .from("applications")
-      .update({
-        completed,
-        completed_at: new Date()
-      })
-      .eq("id", id);
+    if (!app.completed) {
+      return res.status(400).json({ error: "Event not completed yet" });
+    }
 
-    if (updateError) throw updateError;
+    // Determine rating change
+    const change = type === "positive" ? 1 : -1;
 
-    // Rating logic
-    const ratingChange = completed ? 1 : -1;
+    // Update volunteer rating_score
+    const { data: volunteer } = await supabase
+      .from("users")
+      .select("rating_score")
+      .eq("id", app.volunteer_id)
+      .single();
 
-    // Insert rating record
-    await supabase.from("ratings").insert([{
-      volunteer_id: app.volunteer_id,
-      organization_id: req.user.id,
-      application_id: id,
-      rating: ratingChange,
-      feedback
+    const newScore = (volunteer.rating_score || 0) + change;
+
+    await supabase
+      .from("users")
+      .update({ rating_score: newScore })
+      .eq("id", app.volunteer_id);
+
+    // Insert notification with actual feedback
+    await supabase.from("notifications").insert([{
+      user_id: app.volunteer_id,
+      message: `${type === "positive" ? "⭐ Positive" : "⚠ Negative"} feedback: "${feedback}"`
     }]);
 
-    res.json({ message: "Performance recorded" });
+    res.json({ message: "Rating updated", newScore });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-router.post("/applications/:id/rate", verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const { rating, feedback } = req.body;
-
-  const { data: app } = await supabase
-    .from("applications")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (!app.completed) {
-    return res.status(400).json({ error: "Event not completed yet" });
-  }
-
-  const { data, error } = await supabase
-    .from("ratings")
-    .insert([{
-      volunteer_id: app.volunteer_id,
-      organization_id: req.user.id,
-      application_id: id,
-      rating,
-      feedback
-    }])
-    .select()
-    .single();
-
-  if (error) return res.status(400).json({ error: error.message });
-
-  res.json(data);
 });
 // =============================
 // 8️⃣ GET VOLUNTEER TOTAL RATING
@@ -341,6 +364,55 @@ router.get("/volunteer/:id/rating", async (req, res) => {
     const totalRating = data.reduce((sum, r) => sum + r.rating, 0);
 
     res.json({ rating: totalRating });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// =============================
+// GET ORGANIZATION RATING
+// =============================
+router.get("/organization/:id/rating", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { count, error } = await supabase
+      .from("opportunities")
+      .select("*", { count: "exact", head: true })
+      .eq("organization_id", id);
+
+    if (error) throw error;
+
+    res.json({ rating: count });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// =============================
+// GET ORGANIZATION STATS
+// =============================
+router.get("/organization/:id/stats", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Total opportunities created
+    const { count: opportunitiesCount } = await supabase
+      .from("opportunities")
+      .select("*", { count: "exact", head: true })
+      .eq("organization_id", id);
+
+    // Completed applications under this org
+    const { count: completedCount } = await supabase
+      .from("applications")
+      .select("*, opportunities!inner(*)", { count: "exact", head: true })
+      .eq("opportunities.organization_id", id)
+      .eq("completed", true);
+
+    res.json({
+      rating: completedCount || 0,
+      totalOpportunities: opportunitiesCount || 0
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
