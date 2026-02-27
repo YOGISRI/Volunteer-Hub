@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 export default function OrgDashboard() {
     const { user } = useAuth();
@@ -12,11 +13,36 @@ export default function OrgDashboard() {
     }, []);
 
     const fetchData = async () => {
-        const appsRes = await api.get("/opportunities/org/applications");
-        setApplications(appsRes.data);
+        try {
+            const appsRes = await api.get("/opportunities/org/applications");
+            setApplications(appsRes.data);
 
-        const statsRes = await api.get("/opportunities/stats");
-        setOpportunitiesCount(statsRes.data.opportunities);
+            const statsRes = await api.get("/opportunities/stats");
+            setOpportunitiesCount(statsRes.data.opportunities);
+        } catch (err) {
+            toast.error("Failed to load dashboard data");
+        }
+    };
+
+    const handleCompletion = async (id, status) => {
+        const feedback = prompt("Enter feedback:");
+
+        if (!feedback) {
+            alert("Feedback required");
+            return;
+        }
+
+        try {
+            await api.patch(`/opportunities/applications/${id}/complete`, {
+                completed: status,
+                feedback
+            });
+
+            alert("Performance recorded");
+            fetchData();
+        } catch (err) {
+            alert("Error updating performance");
+        }
     };
 
     const totalApplicants = applications.length;
@@ -62,22 +88,50 @@ export default function OrgDashboard() {
                             Opportunity: {app.opportunities?.title}
                         </p>
 
+                        {/* Status */}
                         <p
                             className={`mt-2 font-medium ${app.status === "approved"
-                                    ? "text-green-400"
-                                    : app.status === "rejected"
-                                        ? "text-red-400"
-                                        : "text-yellow-400"
+                                ? "text-green-400"
+                                : app.status === "rejected"
+                                    ? "text-red-400"
+                                    : "text-yellow-400"
                                 }`}
                         >
                             {app.status}
                         </p>
+
+                        {/* Completed Badge */}
+                        {app.completed && (
+                            <span className="inline-block mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm">
+                                Completed
+                            </span>
+                        )}
+
+                        {/* Mark as Completed Button */}
+                        {app.status === "approved" && !app.completed && (
+                            <div className="flex gap-3 mt-3">
+                                <button
+                                    onClick={() => handleCompletion(app.id, true)}
+                                    className="bg-green-600 px-4 py-2 rounded-lg"
+                                >
+                                    Complete
+                                </button>
+
+                                <button
+                                    onClick={() => handleCompletion(app.id, false)}
+                                    className="bg-red-600 px-4 py-2 rounded-lg"
+                                >
+                                    Not Complete
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
         </div>
     );
 }
+
 
 function StatCard({ title, value, color }) {
     return (

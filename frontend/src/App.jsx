@@ -24,7 +24,15 @@ function AppRoutes() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Navbar />
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#1f2937",
+            color: "#fff",
+          },
+        }}
+      />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

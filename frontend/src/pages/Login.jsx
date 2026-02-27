@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Login() {
     const { login } = useAuth();
@@ -11,17 +12,20 @@ export default function Login() {
         password: ""
     });
 
+    const [loading, setLoading] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         try {
-            await login(form);   // login already sets user in context
-
-            // ✅ Always redirect to unified dashboard
+            await login(form);
+            toast.success("Login successful!");
             navigate("/dashboard");
-
         } catch (err) {
-            alert("Login failed", err);
+            toast.error(err.response?.data?.error || "An error occurred");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -43,8 +47,15 @@ export default function Login() {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
 
-            <button className="bg-blue-600 text-white px-4 py-2 rounded">
-                Login
+            <button
+                disabled={loading}
+                className="bg-blue-600 text-white px-4 py-2 rounded w-full flex justify-center items-center"
+            >
+                {loading ? (
+                    <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                ) : (
+                    "Login"
+                )}
             </button>
         </form>
     );

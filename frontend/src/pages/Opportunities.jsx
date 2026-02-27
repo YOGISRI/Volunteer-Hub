@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+
 export default function Opportunities() {
     const [opportunities, setOpportunities] = useState([]);
     const [applications, setApplications] = useState([]);
+    const [search, setSearch] = useState("");
     const { user } = useAuth();
 
     useEffect(() => {
@@ -28,10 +30,8 @@ export default function Opportunities() {
     const handleApply = async (id) => {
         try {
             const res = await api.post(`/opportunities/${id}/apply`);
-
             toast.success("Applied successfully!");
 
-            // Add new application to state
             setApplications((prev) => [...prev, res.data]);
         } catch (err) {
             toast.error(err.response?.data?.error || "Error applying");
@@ -51,53 +51,66 @@ export default function Opportunities() {
                 Volunteer Opportunities
             </h1>
 
+            {/* 🔍 Search Bar */}
+            <input
+                type="text"
+                placeholder="Search opportunities..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="mb-6 p-2 w-full rounded bg-gray-800 border border-gray-700"
+            />
+
             <div className="grid md:grid-cols-2 gap-6">
-                {opportunities.map((opp) => {
-                    const status = getApplicationStatus(opp.id);
+                {opportunities
+                    .filter((opp) =>
+                        opp.title.toLowerCase().includes(search.toLowerCase())
+                    )
+                    .map((opp) => {
+                        const status = getApplicationStatus(opp.id);
 
-                    return (
-                        <div
-                            key={opp.id}
-                            className="bg-gray-800 p-6 rounded-xl shadow-md"
-                        >
-                            <h2 className="text-xl font-semibold">
-                                {opp.title}
-                            </h2>
+                        return (
+                            <div
+                                key={opp.id}
+                                className="bg-gray-800 p-6 rounded-xl shadow-md hover:scale-[1.02] transition"
+                            >
+                                <h2 className="text-xl font-semibold">
+                                    {opp.title}
+                                </h2>
 
-                            <p className="mt-2">{opp.description}</p>
+                                <p className="mt-2">{opp.description}</p>
 
-                            <p className="mt-2 text-sm text-gray-400">
-                                📍 {opp.location}
-                            </p>
+                                <p className="mt-2 text-sm text-gray-400">
+                                    📍 {opp.location}
+                                </p>
 
-                            {user?.role === "volunteer" && (
-                                <>
-                                    {status ? (
-                                        <button
-                                            disabled
-                                            className={`mt-4 px-4 py-2 rounded-lg ${status === "approved"
-                                                ? "bg-green-600"
-                                                : status === "rejected"
-                                                    ? "bg-red-600"
-                                                    : "bg-yellow-600"
-                                                }`}
-                                        >
-                                            {status.charAt(0).toUpperCase() +
-                                                status.slice(1)}
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleApply(opp.id)}
-                                            className="mt-4 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700"
-                                        >
-                                            Apply
-                                        </button>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    );
-                })}
+                                {user?.role === "volunteer" && (
+                                    <>
+                                        {status ? (
+                                            <button
+                                                disabled
+                                                className={`mt-4 px-4 py-2 rounded-lg ${status === "approved"
+                                                        ? "bg-green-600"
+                                                        : status === "rejected"
+                                                            ? "bg-red-600"
+                                                            : "bg-yellow-600"
+                                                    }`}
+                                            >
+                                                {status.charAt(0).toUpperCase() +
+                                                    status.slice(1)}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleApply(opp.id)}
+                                                className="mt-4 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                Apply
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        );
+                    })}
             </div>
         </div>
     );
