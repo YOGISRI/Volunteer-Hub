@@ -418,4 +418,23 @@ router.get("/organization/:id/stats", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get("/org", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "organization") {
+      return res.status(403).json({ error: "Only organizations allowed" });
+    }
+
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select("*")
+      .eq("organization_id", req.user.id); // 🔥 IMPORTANT FILTER
+
+    if (error) return res.status(400).json(error);
+
+    res.json(data);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 export default router;

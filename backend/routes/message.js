@@ -8,51 +8,80 @@ const router = express.Router();
    SEND MESSAGE
 =========================== */
 router.post("/", verifyToken, async (req, res) => {
-  try {
-    const { receiver_id, content } = req.body;
+  const { content, parent_id } = req.body;
 
-    const { data, error } = await supabase
-      .from("messages")
-      .insert([{
-        sender_id: req.user.id,
-        receiver_id,
-        content
-      }])
-      .select()
-      .single();
+  const { data, error } = await supabase
+    .from("messages")
+    .insert([
+      {
+        user_id: req.user.id,
+        content,
+        parent_id
+      }
+    ])
+    .select()
+    .single();
 
-    if (error) throw error;
+  if (error) return res.status(400).json(error);
 
-    res.json(data);
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  res.json(data);
 });
 
 /* ===========================
-   GET CONVERSATION
+   GET ALL MESSAGES
 =========================== */
-router.get("/:userId", verifyToken, async (req, res) => {
-  try {
-    const { userId } = req.params;
+router.get("/", verifyToken, async (req, res) => {
+  const { data, error } = await supabase
+    .from("messages")
+    .select(`
+      *,
+      users:user_id ( name )
+    `)
+    .order("created_at", { ascending: true });
 
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .or(
-        `and(sender_id.eq.${req.user.id},receiver_id.eq.${userId}),
-         and(sender_id.eq.${userId},receiver_id.eq.${req.user.id})`
-      )
-      .order("created_at", { ascending: true });
+  if (error) return res.status(400).json(error);
 
-    if (error) throw error;
-
-    res.json(data);
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  res.json(data);
 });
+/* ===========================
+   GET UNREAD COUNT
+=========================== */
+router.get("/unread-count", verifyToken, async (req, res) => {
+  const userId = req.user.id;
 
+  // 1️⃣ Get user's last seen time
+  const { data: user } = await supabase
+    .from("users")
+    .select("last_seen_chat")
+    .eq("id", userId)
+    .single();
+
+  const lastSeen = user?.last_seen_chat || "1970-01-01";
+
+  // 2️⃣ Count ONLY messages sent by OTHER users
+  const { count, error } = await supabase
+    .from("messages")
+    .select("*", { count: "exact", head: true })
+    .gt("created_at", lastSeen)
+    .neq("user_id", userId); // 👈 VERY IMPORTANT
+
+  if (error) return res.status(400).json(error);
+
+  res.json({ unread: count });
+});
+/* ===========================
+   MARK CHAT AS READ
+=========================== */
+router.patch("/mark-read", verifyToken, async (req, res) => {
+  const userId = req.user.id;
+
+  const { error } = await supabase
+    .from("users")
+    .update({ last_seen_chat: new Date() })
+    .eq("id", userId);
+
+  if (error) return res.status(400).json(error);
+
+  res.json({ success: true });
+});
 export default router;
