@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-
+import { useNavigate } from "react-router-dom";
 export default function MyApplications() {
     const [applications, setApplications] = useState([]);
+    const navigate = useNavigate();
 
     const fetchApplications = async () => {
         try {
@@ -41,12 +42,6 @@ export default function MyApplications() {
                                 {app.status || "Pending"}
                             </span>
                         </p><br></br>
-                        <button
-                            onClick={() => navigate(`/chat/${app.opportunities.organization_id}`)}
-                            className="bg-purple-600 px-4 py-2 rounded"
-                        >
-                            Message Org
-                        </button>
                     </div>
                 ))}
             </div>

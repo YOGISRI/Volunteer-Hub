@@ -73,10 +73,16 @@ export default function OrgDashboard() {
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">
                 Welcome, {user?.name}
-            </h1>
+            </h1><br></br><br></br>
+            <button
+                onClick={() => navigate("/group-events/create")}
+                className="bg-purple-600 px-4 py-2 rounded-lg"
+            >
+                Create Group Event
+            </button>
 
             {/* Stat Cards */}
-            <div className="grid md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 <StatCard title="Opportunities" value={opportunitiesCount} color="text-blue-400" />
                 <StatCard title="Applicants" value={totalApplicants} color="text-purple-400" />
                 <StatCard title="Approved" value={approved} color="text-green-400" />
@@ -87,7 +93,6 @@ export default function OrgDashboard() {
             <h2 className="text-xl font-semibold mt-10 mb-4">
                 Recent Applications
             </h2>
-
             <div className="space-y-4">
                 {applications.slice(0, 5).map(app => (
                     <div
@@ -104,14 +109,7 @@ export default function OrgDashboard() {
 
                         <p className="mt-1 text-sm">
                             Opportunity: {app.opportunities?.title}
-                        </p><br></br>
-                        <button
-                            onClick={() => navigate(`/chat/${app.volunteer_id}`)}
-                            className="bg-purple-600 px-4 py-2 rounded"
-                        >
-                            Message
-                        </button>
-
+                        </p>
                         {/* STATUS TEXT */}
                         <p
                             className={`mt-2 font-medium ${app.completed === true

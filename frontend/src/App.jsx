@@ -20,13 +20,16 @@ import { Toaster } from "react-hot-toast";
 import FeedbackPage from "./pages/FeedbackPage";
 import CreateOpportunity from "./pages/CreateOpportunity";
 import EventCalendar from "./pages/EventCalendar";
-import Chat from "./pages/Chat";
+import CommunityChat from './pages/CommunityChat';
+import CreateGroupEvent from "./pages/CreateGroupEvent";
+import GroupEventDetails from "./pages/GroupEventDetails";
+import GroupEvents from "./pages/GroupEvents";
 
 function AppRoutes() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white px-4 sm:px-6 md:px-10 overflow-x-hidden">
       <Navbar />
       <Toaster
         position="top-right"
@@ -37,86 +40,92 @@ function AppRoutes() {
           },
         }}
       />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <main className="px-4 sm:px-6 md:px-10 py-6">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Role-based Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              {user?.role === "organization" ? (
-                <OrgDashboard />
-              ) : (
-                <VolunteerDashboard />
-              )}
-            </ProtectedRoute>
-          }
-        />
+          {/* Role-based Dashboard */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                {user?.role === "organization" ? (
+                  <OrgDashboard />
+                ) : (
+                  <VolunteerDashboard />
+                )}
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/opportunities"
-          element={
-            <ProtectedRoute>
-              <Opportunities />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/opportunities"
+            element={
+              <ProtectedRoute>
+                <Opportunities />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/impact"
-          element={
-            <ProtectedRoute>
-              <ImpactReport />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/impact"
+            element={
+              <ProtectedRoute>
+                <ImpactReport />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/my-applications"
-          element={
-            <ProtectedRoute role="volunteer">
-              <MyApplications />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/feedback/:id"
-          element={
-            <ProtectedRoute role="organization">
-              <FeedbackPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create-opportunity"
-          element={
-            <ProtectedRoute role="organization">
-              <CreateOpportunity />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/calendar" element={<EventCalendar />} />
-        <Route
-          path="/chat/:userId"
-          element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+          <Route
+            path="/my-applications"
+            element={
+              <ProtectedRoute role="volunteer">
+                <MyApplications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/feedback/:id"
+            element={
+              <ProtectedRoute role="organization">
+                <FeedbackPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-opportunity"
+            element={
+              <ProtectedRoute role="organization">
+                <CreateOpportunity />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/calendar" element={<EventCalendar />} />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <CommunityChat />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/impact-report" element={<ImpactReport />} />
+          <Route path="/group-events/create" element={<CreateGroupEvent />} />
+          <Route path="/group-events/:id" element={<GroupEventDetails />} />
+          <Route path="/group-events" element={<GroupEvents />} />
+        </Routes>
+      </main>
     </div>
   );
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function VolunteerDashboard() {
     const { user } = useAuth();
     const [applications, setApplications] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchApplications();
@@ -25,6 +27,12 @@ export default function VolunteerDashboard() {
             <h1 className="text-2xl font-bold mb-6">
                 Welcome, {user?.name}
             </h1>
+            <button
+                onClick={() => navigate("/group-events")}
+                className="px-4 py-2 bg-indigo-600 rounded-lg"
+            >
+                Group Events
+            </button><br></br><br></br>
 
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-6">
@@ -51,10 +59,10 @@ export default function VolunteerDashboard() {
 
                         <p
                             className={`mt-1 ${app.status === "approved"
-                                    ? "text-green-400"
-                                    : app.status === "rejected"
-                                        ? "text-red-400"
-                                        : "text-yellow-400"
+                                ? "text-green-400"
+                                : app.status === "rejected"
+                                    ? "text-red-400"
+                                    : "text-yellow-400"
                                 }`}
                         >
                             {app.status}

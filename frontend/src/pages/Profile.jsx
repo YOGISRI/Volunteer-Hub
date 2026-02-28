@@ -25,7 +25,6 @@ export default function Profile() {
         totalOpportunities: 0
     });
 
-    // ✅ NEW STATE FOR HOURS
     const [hoursData, setHoursData] = useState({
         totalHours: 0,
         history: []
@@ -40,7 +39,7 @@ export default function Profile() {
             fetchOrgStats();
         } else {
             fetchRating();
-            fetchHours(); // ✅ added
+            fetchHours();
         }
     }, [user]);
 
@@ -61,7 +60,6 @@ export default function Profile() {
         setOrgStats(res.data);
     };
 
-    // ✅ NEW FUNCTION
     const fetchHours = async () => {
         try {
             const res = await api.get(`/users/${user.id}/hours`);
@@ -82,26 +80,29 @@ export default function Profile() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-8">
+        <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 md:p-8">
             <div className="max-w-5xl mx-auto">
 
-                {/* HEADER SECTION */}
-                <div className="bg-gray-800 rounded-2xl p-8 shadow-xl flex flex-col md:flex-row items-center gap-8">
+                {/* HEADER */}
+                <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center gap-6 w-full">
 
                     {/* Avatar */}
-                    <div className="w-28 h-28 rounded-full bg-blue-600 flex items-center justify-center text-4xl font-bold">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-blue-600 flex items-center justify-center text-3xl sm:text-4xl font-bold">
                         {profile.name?.charAt(0).toUpperCase()}
                     </div>
 
-                    {/* Basic Info */}
-                    <div>
-                        <h2 className="text-3xl font-bold">{profile.name}</h2>
+                    <div className="text-center md:text-left w-full">
+
+                        <h2 className="text-2xl sm:text-3xl font-bold">
+                            {profile.name}
+                        </h2>
+
                         <p className="text-gray-400">{profile.email}</p>
 
-                        {/* Role-based stats */}
+                        {/* ORG VIEW */}
                         {user?.role === "organization" ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
 
-                            <div className="flex gap-6 mt-4">
                                 <div>
                                     <p className="text-yellow-400 text-2xl font-bold">
                                         ⭐ {orgStats.rating}
@@ -119,12 +120,12 @@ export default function Profile() {
                                         Opportunities Created
                                     </p>
                                 </div>
+
                             </div>
-
                         ) : (
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-6 mt-6">
 
-                            <div className="flex gap-10 mt-4">
-
+                                {/* Rating */}
                                 <div>
                                     <p className="text-yellow-400 text-2xl font-bold">
                                         ⭐ {rating.score}
@@ -134,7 +135,7 @@ export default function Profile() {
                                     </p>
                                 </div>
 
-                                {/* ✅ NEW HOURS DISPLAY */}
+                                {/* Hours */}
                                 <div>
                                     <p className="text-green-400 text-2xl font-bold">
                                         ⏱ {hoursData.totalHours}
@@ -144,14 +145,23 @@ export default function Profile() {
                                     </p>
                                 </div>
 
-                            </div>
+                                {/* Impact Button */}
+                                <div className="sm:ml-auto w-full sm:w-auto">
+                                    <button
+                                        onClick={() => navigate("/impact-report")}
+                                        className="w-full sm:w-auto px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition"
+                                    >
+                                        View Impact Report
+                                    </button>
+                                </div>
 
+                            </div>
                         )}
                     </div>
                 </div>
 
                 {/* PROFILE SECTION */}
-                <div className="bg-gray-800 rounded-2xl p-8 shadow-xl mt-10">
+                <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-xl mt-10">
 
                     <h3 className="text-xl font-semibold mb-6">
                         {user?.role === "organization"
@@ -160,19 +170,14 @@ export default function Profile() {
                     </h3>
 
                     {user?.role === "organization" ? (
-
-                        <div className="space-y-6">
-                            <button
-                                type="button"
-                                onClick={() => navigate("/create-opportunity")}
-                                className="w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 transition"
-                            >
-                                Add New Opportunity
-                            </button>
-                        </div>
-
+                        <button
+                            type="button"
+                            onClick={() => navigate("/create-opportunity")}
+                            className="w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 transition"
+                        >
+                            Add New Opportunity
+                        </button>
                     ) : (
-
                         <form onSubmit={handleUpdate} className="space-y-6">
 
                             <div>
@@ -211,13 +216,12 @@ export default function Profile() {
                             </button>
 
                         </form>
-
                     )}
                 </div>
 
-                {/* ✅ VOLUNTEER HISTORY SECTION */}
+                {/* HISTORY */}
                 {user?.role !== "organization" && hoursData.history.length > 0 && (
-                    <div className="bg-gray-800 rounded-2xl p-8 shadow-xl mt-10">
+                    <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 shadow-xl mt-10">
                         <h3 className="text-xl font-semibold mb-6">
                             Volunteer History
                         </h3>

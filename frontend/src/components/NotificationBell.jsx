@@ -1,65 +1,50 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { Bell } from "lucide-react";
+import { Bell, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function NotificationBell() {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
 
-    // Load notifications on mount
     useEffect(() => {
         const load = async () => {
             try {
                 const res = await api.get("/opportunities/notifications");
                 setNotifications(res.data);
-
                 const unread = res.data.filter(n => !n.is_read).length;
                 setUnreadCount(unread);
             } catch (err) {
                 console.error("Error loading notifications", err);
             }
         };
-
         load();
     }, []);
 
-    const markAllAsRead = async () => {
+    const markAsRead = async (id) => {
         try {
-            const unread = notifications.filter(n => !n.is_read);
-
-            await Promise.all(
-                unread.map(n =>
-                    api.patch(`/opportunities/notifications/${n.id}/read`)
+            await api.patch(`/opportunities/notifications/${id}/read`);
+            setNotifications(prev =>
+                prev.map(n =>
+                    n.id === id ? { ...n, is_read: true } : n
                 )
             );
-
-            // Update local state instantly
-            setNotifications(prev =>
-                prev.map(n => ({ ...n, is_read: true }))
-            );
-
-            setUnreadCount(0); // 🔥 instantly remove badge
+            setUnreadCount(prev => Math.max(prev - 1, 0));
         } catch (err) {
-            console.error("Error marking all as read", err);
+            console.error("Error marking read", err);
         }
     };
 
     return (
-        <div className="relative">
+        <>
+            {/* Bell Button */}
             <button
-                onClick={async () => {
-                    const nextOpen = !open;
-                    setOpen(nextOpen);
-
-                    if (nextOpen && unreadCount > 0) {
-                        await markAllAsRead();
-                    }
-                }}
+                onClick={() => setOpen(true)}
                 className="relative"
             >
-                <Bell className="w-6 h-6" />
-
+                <Bell className="w-6 h-6 text-gray-300 hover:text-white transition" />
                 {unreadCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-600 text-xs px-2 py-0.5 rounded-full">
                         {unreadCount}
@@ -67,12 +52,29 @@ export default function NotificationBell() {
                 )}
             </button>
 
+            {/* Overlay */}
             {open && (
-                <div className="absolute right-0 mt-3 w-72 bg-gray-800 shadow-lg rounded-xl p-4 z-50">
-                    <h3 className="font-semibold mb-3">Notifications</h3>
+                <div
+                    onClick={() => setOpen(false)}
+                    className="fixed inset-0 bg-black/50 z-40"
+                />
+            )}
 
+            {/* Slide Panel */}
+            <div
+                className={`fixed top-0 right-0 h-full w-80 bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"
+                    }`}
+            >
+                <div className="flex justify-between items-center p-4 border-b border-gray-700">
+                    <h3 className="text-lg font-semibold">Notifications</h3>
+                    <button onClick={() => setOpen(false)}>
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="overflow-y-auto h-[calc(100%-60px)] p-4 space-y-3">
                     {notifications.length === 0 && (
-                        <p className="text-sm text-gray-400">
+                        <p className="text-gray-400 text-sm">
                             No notifications
                         </p>
                     )}
@@ -80,14 +82,21 @@ export default function NotificationBell() {
                     {notifications.map(n => (
                         <div
                             key={n.id}
-                            className={`p-2 rounded-lg mb-2 ${n.is_read ? "bg-gray-700" : "bg-gray-600"
+                            onClick={() => {
+                                markAsRead(n.id);
+                                if (n.link) navigate(n.link);
+                                setOpen(false);
+                            }}
+                            className={`p-3 rounded-lg cursor-pointer transition ${n.is_read
+                                    ? "bg-gray-800 text-gray-400"
+                                    : "bg-gray-700 text-white"
                                 }`}
                         >
-                            <p className="text-sm">{n.message}</p>
+                            {n.message}
                         </div>
                     ))}
                 </div>
-            )}
-        </div>
+            </div>
+        </>
     );
 }
