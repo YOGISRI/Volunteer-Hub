@@ -92,7 +92,7 @@ export default function Navbar() {
 
               <NotificationBell />
 
-
+              {/* PROFILE */}
               <div className="relative" ref={profileRef}>
                 <div
                   onClick={() => setProfileOpen(prev => !prev)}
@@ -101,9 +101,9 @@ export default function Navbar() {
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
 
-
+                {/* DESKTOP DROPDOWN */}
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-lg shadow-lg z-20">
+                  <div className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
                     <Link
                       to="/profile"
                       onClick={() => setProfileOpen(false)}
