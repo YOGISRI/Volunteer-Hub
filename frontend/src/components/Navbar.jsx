@@ -51,175 +51,181 @@ export default function Navbar() {
   };
 
   return (
-  <nav className="bg-gray-800 p-4 relative z-30">
-    {/* ================= DESKTOP NAV ================= */}
-    <div className="hidden sm:flex justify-between items-center">
+    <nav className="bg-gray-800 p-4 relative z-30">
+      {/* ================= DESKTOP NAV ================= */}
+      <div className="hidden sm:flex justify-between items-center">
 
-      {/* Logo */}
-      <h1 className="text-xl font-bold">
-        <Link to="/">VolunteerHub</Link>
-      </h1>
+        {/* Logo */}
+        <h1 className="text-xl font-bold">
+          <Link to="/">VolunteerHub</Link>
+        </h1>
 
-      {user && (
-        <div className="flex items-center gap-4 text-sm">
+        {user && (
+          <div className="flex items-center gap-4 text-sm">
 
-          <Link to="/dashboard" className="text-gray-300 hover:text-white">
-            Dashboard
-          </Link>
-
-          <Link to="/opportunities" className="text-gray-300 hover:text-white">
-            Opportunities
-          </Link>
-
-          <button
-            onClick={() => navigate("/chat")}
-            className="relative px-4 py-2 bg-indigo-600 rounded-lg text-white"
-          >
-            Community Chat
-            {unread > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-xs px-2 py-1 rounded-full">
-                {unread}
-              </span>
-            )}
-          </button>
-
-          {user.role === "volunteer" && (
-            <Link to="/my-applications" className="text-gray-300 hover:text-white">
-              My Applications
+            <Link to="/dashboard" className="text-gray-300 hover:text-white">
+              Dashboard
             </Link>
-          )}
 
-          <NotificationBell />
+            <Link to="/opportunities" className="text-gray-300 hover:text-white">
+              Opportunities
+            </Link>
 
-          {/* Avatar */}
-          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => navigate("/chat")}
+              className="relative px-4 py-2 bg-indigo-600 rounded-lg text-white"
+            >
+              Community Chat
+              {unread > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-xs px-2 py-1 rounded-full">
+                  {unread}
+                </span>
+              )}
+            </button>
+
+            {user.role === "volunteer" && (
+              <Link to="/my-applications" className="text-gray-300 hover:text-white">
+                My Applications
+              </Link>
+            )}
+
+            <NotificationBell />
+
+            {/* Avatar */}
+            <div className="relative" ref={profileRef}>
+              <div
+                onClick={() => setProfileOpen(prev => !prev)}
+                className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold cursor-pointer"
+              >
+                {user?.name?.charAt(0).toUpperCase()}
+              </div>
+
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
+                  <Link to="/profile" className="block px-4 py-2 hover:bg-gray-700">
+                    Profile
+                  </Link>
+                  <Link to="/calendar" className="block px-4 py-2 hover:bg-gray-700">
+                    Calendar
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ================= MOBILE NAV ================= */}
+      <div className="sm:hidden space-y-3">
+
+        {/* Top Row */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl font-bold">
+            <Link to="/">VolunteerHub</Link>
+          </h1>
+
+          {user && (
             <div
               onClick={() => setProfileOpen(prev => !prev)}
               className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold cursor-pointer"
             >
               {user?.name?.charAt(0).toUpperCase()}
             </div>
-
-            {profileOpen && (
-              <div className="absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
-                <Link to="/profile" className="block px-4 py-2 hover:bg-gray-700">
-                  Profile
-                </Link>
-                <Link to="/calendar" className="block px-4 py-2 hover:bg-gray-700">
-                  Calendar
-                </Link>
-                <button
-                  onClick={logout}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      )}
-    </div>
 
-    {/* ================= MOBILE NAV ================= */}
-    <div className="sm:hidden space-y-3">
-
-      {/* Top Row */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">
-          <Link to="/">VolunteerHub</Link>
-        </h1>
-
+        {/* Mobile Links */}
         {user && (
-          <div
-            onClick={() => setProfileOpen(prev => !prev)}
-            className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold cursor-pointer"
-          >
-            {user?.name?.charAt(0).toUpperCase()}
+          <div className="flex flex-col gap-2">
+
+            <Link
+              to="/dashboard"
+              className="block px-4 py-2 bg-gray-700 rounded-lg"
+            >
+              Dashboard
+            </Link>
+
+            <Link
+              to="/opportunities"
+              className="block px-4 py-2 bg-gray-700 rounded-lg"
+            >
+              Opportunities
+            </Link>
+
+            <button
+              onClick={() => navigate("/chat")}
+              className="w-full px-4 py-2 bg-indigo-600 rounded-lg text-white"
+            >
+              Community Chat
+            </button>
+
+            {user.role === "volunteer" && (
+              <Link
+                to="/my-applications"
+                className="block px-4 py-2 bg-gray-700 rounded-lg"
+              >
+                My Applications
+              </Link>
+            )}
+
+            <NotificationBell />
           </div>
         )}
       </div>
 
-      {/* Mobile Links */}
-      {user && (
-        <div className="flex flex-col gap-2">
+      {/* ================= MOBILE PROFILE DRAWER ================= */}
+      {profileOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-[100]"
+            onClick={() => setProfileOpen(false)}
+          />
 
-          <Link
-            to="/dashboard"
-            className="block px-4 py-2 bg-gray-700 rounded-lg"
+          <div
+            className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl z-[110]"
+            onClick={(e) => e.stopPropagation()}
           >
-            Dashboard
-          </Link>
+            <div className="flex justify-between items-center p-4 border-b border-gray-700">
+              <h3 className="text-lg font-semibold">Account</h3>
+              <button onClick={() => setProfileOpen(false)}>✕</button>
+            </div>
 
-          <Link
-            to="/opportunities"
-            className="block px-4 py-2 bg-gray-700 rounded-lg"
-          >
-            Opportunities
-          </Link>
+            <div className="p-4 space-y-4">
+              <Link
+                to="/profile"
+                onClick={() => setProfileOpen(false)}
+                className="block p-3 bg-gray-800 rounded-lg"
+              >
+                Profile
+              </Link>
 
-          <button
-            onClick={() => navigate("/chat")}
-            className="w-full px-4 py-2 bg-indigo-600 rounded-lg text-white"
-          >
-            Community Chat
-          </button>
+              <Link
+                to="/calendar"
+                onClick={() => setProfileOpen(false)}
+                className="block p-3 bg-gray-800 rounded-lg"
+              >
+                Calendar
+              </Link>
 
-          {user.role === "volunteer" && (
-            <Link
-              to="/my-applications"
-              className="block px-4 py-2 bg-gray-700 rounded-lg"
-            >
-              My Applications
-            </Link>
-          )}
-
-          <NotificationBell />
-        </div>
+              <button
+                onClick={() => {
+                  setProfileOpen(false);
+                  logout();
+                }}
+                className="w-full text-left p-3 bg-red-600 rounded-lg"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </>
       )}
-    </div>
-
-    {/* ================= MOBILE PROFILE DRAWER ================= */}
-    {profileOpen && (
-  <>
-    {/* Overlay */}
-    <div
-      className="fixed inset-0 bg-black/50 z-[100]"
-      onClick={() => setProfileOpen(false)}
-    />
-
-    {/* Drawer */}
-    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl z-[110]">
-      <div className="flex justify-between items-center p-4 border-b border-gray-700">
-        <h3 className="text-lg font-semibold">Account</h3>
-        <button onClick={() => setProfileOpen(false)}>✕</button>
-      </div>
-
-      <div className="p-4 space-y-4">
-        <Link
-          to="/profile"
-          className="block p-3 bg-gray-800 rounded-lg"
-        >
-          Profile
-        </Link>
-
-        <Link
-          to="/calendar"
-          className="block p-3 bg-gray-800 rounded-lg"
-        >
-          Calendar
-        </Link>
-
-        <button
-          onClick={logout}
-          className="w-full text-left p-3 bg-red-600 rounded-lg"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  </>
-)}
-  </nav>
-);
+    </nav>
+  );
 }
