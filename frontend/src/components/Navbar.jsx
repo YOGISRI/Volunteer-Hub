@@ -58,7 +58,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="bg-gray-800 p-4 relative z-50">
+        <nav className="bg-gray-800 p-4 relative z-30">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
 
                 {/* LOGO */}
@@ -117,31 +117,46 @@ export default function Navbar() {
                                     {user?.name?.charAt(0).toUpperCase()}
                                 </div>
 
-                                {/* DESKTOP DROPDOWN */}
                                 {profileOpen && (
-                                    <div className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700">
-                                        <Link
-                                            to="/profile"
-                                            className="block px-4 py-2 hover:bg-gray-700 rounded-t-lg"
-                                        >
-                                            Profile
-                                        </Link>
+  <>
+    {/* Overlay */}
+    <div
+      onClick={() => setProfileOpen(false)}
+      className="fixed inset-0 bg-black/50 sm:hidden z-40"
+    />
 
-                                        <Link
-                                            to="/calendar"
-                                            className="block px-4 py-2 hover:bg-gray-700"
-                                        >
-                                            Calendar
-                                        </Link>
+    {/* Drawer */}
+    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl sm:hidden z-50 transition-transform duration-300">
+      <div className="flex justify-between items-center p-4 border-b border-gray-700">
+        <h3 className="text-lg font-semibold">Account</h3>
+        <button onClick={() => setProfileOpen(false)}>✕</button>
+      </div>
 
-                                        <button
-                                            onClick={logout}
-                                            className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg"
-                                        >
-                                            Logout
-                                        </button>
-                                    </div>
-                                )}
+      <div className="p-4 space-y-4">
+        <Link
+          to="/profile"
+          className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
+        >
+          Profile
+        </Link>
+
+        <Link
+          to="/calendar"
+          className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
+        >
+          Calendar
+        </Link>
+
+        <button
+          onClick={logout}
+          className="w-full text-left p-3 rounded-lg bg-red-600 hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </>
+)}
                             </div>
                         </>
                     ) : (
