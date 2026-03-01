@@ -181,35 +181,45 @@ export default function Navbar() {
 
     {/* ================= MOBILE PROFILE DRAWER ================= */}
     {profileOpen && (
-      <div className="sm:hidden">
-        <div
-          onClick={() => setProfileOpen(false)}
-          className="fixed inset-0 bg-black/50 z-40"
-        />
+  <>
+    {/* Overlay */}
+    <div
+      onClick={() => setProfileOpen(false)}
+      className="fixed inset-0 bg-black/50 sm:hidden z-40"
+    />
 
-        <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl z-50">
-          <div className="flex justify-between items-center p-4 border-b border-gray-700">
-            <h3 className="text-lg font-semibold">Account</h3>
-            <button onClick={() => setProfileOpen(false)}>✕</button>
-          </div>
-
-          <div className="p-4 space-y-4">
-            <Link to="/profile" className="block p-3 bg-gray-800 rounded-lg">
-              Profile
-            </Link>
-            <Link to="/calendar" className="block p-3 bg-gray-800 rounded-lg">
-              Calendar
-            </Link>
-            <button
-              onClick={logout}
-              className="w-full text-left p-3 bg-red-600 rounded-lg"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
+    {/* Drawer */}
+    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl sm:hidden z-50 transition-transform duration-300">
+      <div className="flex justify-between items-center p-4 border-b border-gray-700">
+        <h3 className="text-lg font-semibold">Account</h3>
+        <button onClick={() => setProfileOpen(false)}>✕</button>
       </div>
-    )}
+
+      <div className="p-4 space-y-4">
+        <Link
+          to="/profile"
+          className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
+        >
+          Profile
+        </Link>
+
+        <Link
+          to="/calendar"
+          className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
+        >
+          Calendar
+        </Link>
+
+        <button
+          onClick={logout}
+          className="w-full text-left p-3 rounded-lg bg-red-600 hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </>
+)}
   </nav>
 );
 }
