@@ -5,218 +5,176 @@ import { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 
 export default function Navbar() {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
-    const location = useLocation();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const [unread, setUnread] = useState(0);
-    const [profileOpen, setProfileOpen] = useState(false);
-    const profileRef = useRef(null);
+  const [unread, setUnread] = useState(0);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
-    /* ===============================
-       CLOSE DROPDOWN ON ROUTE CHANGE
-    ================================ */
-    useEffect(() => {
+  /* Close on route change */
+  useEffect(() => {
+    setProfileOpen(false);
+  }, [location.pathname]);
+
+  /* Close when clicking outside */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
-    }, [location.pathname]);
-
-    /* ===============================
-       CLOSE WHEN CLICK OUTSIDE
-    ================================ */
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (profileRef.current && !profileRef.current.contains(event.target)) {
-                setProfileOpen(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    /* ===============================
-       FETCH UNREAD CHAT COUNT
-    ================================ */
-    useEffect(() => {
-        if (!user) return;
-
-        fetchUnread();
-        const interval = setInterval(fetchUnread, 5000);
-
-        return () => clearInterval(interval);
-    }, [user]);
-
-    const fetchUnread = async () => {
-        try {
-            const res = await api.get("/messages/unread-count");
-            setUnread(res.data.unread);
-        } catch (err) {
-            if (err.response?.status !== 401) {
-                console.error("Unread fetch error", err);
-            }
-        }
+      }
     };
 
-    return (
-        <nav className="bg-gray-800 p-4 relative z-30">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-                {/* LOGO */}
-                <h1 className="text-xl font-bold">
-                    <Link to="/">VolunteerHub</Link>
-                </h1>
+  /* Fetch unread count */
+  useEffect(() => {
+    if (!user) return;
 
-                {/* MENU */}
-                <div className="flex flex-wrap gap-4 items-center text-sm">
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 5000);
+    return () => clearInterval(interval);
+  }, [user]);
 
-                    {user ? (
-                        <>
-                            <Link
-                                to="/dashboard"
-                                className="text-gray-300 hover:text-white transition"
-                            >
-                                Dashboard
-                            </Link>
+  const fetchUnread = async () => {
+    try {
+      const res = await api.get("/messages/unread-count");
+      setUnread(res.data.unread);
+    } catch (err) {
+      if (err.response?.status !== 401) {
+        console.error("Unread fetch error", err);
+      }
+    }
+  };
 
-                            <Link
-                                to="/opportunities"
-                                className="text-gray-300 hover:text-white transition"
-                            >
-                                Opportunities
-                            </Link>
+  return (
+    <nav className="bg-gray-800 p-4 relative z-30">
+      <div className="flex justify-between items-center">
 
-                            <button
-                                onClick={() => navigate("/chat")}
-                                className="relative px-4 py-2 bg-indigo-600 rounded-lg text-white"
-                            >
-                                Community Chat
-                                {unread > 0 && (
-                                    <span className="absolute -top-2 -right-2 bg-red-600 text-xs px-2 py-1 rounded-full">
-                                        {unread}
-                                    </span>
-                                )}
-                            </button>
+        {/* Logo */}
+        <h1 className="text-xl font-bold">
+          <Link to="/">VolunteerHub</Link>
+        </h1>
 
-                            {user.role === "volunteer" && (
-                                <Link
-                                    to="/my-applications"
-                                    className="text-gray-300 hover:text-white transition"
-                                >
-                                    My Applications
-                                </Link>
-                            )}
+        {/* Menu */}
+        <div className="flex items-center gap-4 text-sm">
 
-                            <NotificationBell />
+          {user ? (
+            <>
+              <Link to="/dashboard" className="text-gray-300 hover:text-white">
+                Dashboard
+              </Link>
 
-                            {/* PROFILE AVATAR */}
-                            <div className="relative" ref={profileRef}>
-                                <div
-                                    onClick={() => setProfileOpen(prev => !prev)}
-                                    className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold cursor-pointer"
-                                >
-                                    {user?.name?.charAt(0).toUpperCase()}
-                                </div>
+              <Link to="/opportunities" className="text-gray-300 hover:text-white">
+                Opportunities
+              </Link>
 
-                                {profileOpen && (
-  <>
-    {/* Overlay */}
-    <div
-      onClick={() => setProfileOpen(false)}
-      className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50"
-    />
+              <button
+                onClick={() => navigate("/chat")}
+                className="relative px-4 py-2 bg-indigo-600 rounded-lg text-white"
+              >
+                Community Chat
+                {unread > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-xs px-2 py-1 rounded-full">
+                    {unread}
+                  </span>
+                )}
+              </button>
 
-    {/* Drawer */}
-    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl sm:hidden z-50 transition-transform duration-300">
-      <div className="flex justify-between items-center p-4 border-b border-gray-700">
-        <h3 className="text-lg font-semibold">Account</h3>
-        <button onClick={() => setProfileOpen(false)}>✕</button>
-      </div>
+              {user.role === "volunteer" && (
+                <Link to="/my-applications" className="text-gray-300 hover:text-white">
+                  My Applications
+                </Link>
+              )}
 
-      <div className="p-4 space-y-4">
-        <Link
-          to="/profile"
-          className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
-        >
-          Profile
-        </Link>
+              <NotificationBell />
 
-        <Link
-          to="/calendar"
-          className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
-        >
-          Calendar
-        </Link>
-
-        <button
-          onClick={logout}
-          className="w-full text-left p-3 rounded-lg bg-red-600 hover:bg-red-700"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  </>
-)}
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <Link
-                                to="/login"
-                                className="text-gray-300 hover:text-white transition"
-                            >
-                                Login
-                            </Link>
-
-                            <Link
-                                to="/register"
-                                className="text-gray-300 hover:text-white transition"
-                            >
-                                Register
-                            </Link>
-                        </>
-                    )}
+              {/* Profile Avatar */}
+              <div className="relative" ref={profileRef}>
+                <div
+                  onClick={() => setProfileOpen(prev => !prev)}
+                  className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold cursor-pointer"
+                >
+                  {user?.name?.charAt(0).toUpperCase()}
                 </div>
+
+                {/* Desktop Dropdown */}
+                {profileOpen && (
+                  <div className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 hover:bg-gray-700 rounded-t-lg"
+                    >
+                      Profile
+                    </Link>
+
+                    <Link
+                      to="/calendar"
+                      className="block px-4 py-2 hover:bg-gray-700"
+                    >
+                      Calendar
+                    </Link>
+
+                    <button
+                      onClick={logout}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-gray-300 hover:text-white">
+                Login
+              </Link>
+
+              <Link to="/register" className="text-gray-300 hover:text-white">
+                Register
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Drawer */}
+      {profileOpen && (
+        <div className="sm:hidden">
+          <div
+            onClick={() => setProfileOpen(false)}
+            className="fixed inset-0 bg-black/50 z-40"
+          />
+
+          <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl z-50">
+            <div className="flex justify-between items-center p-4 border-b border-gray-700">
+              <h3 className="text-lg font-semibold">Account</h3>
+              <button onClick={() => setProfileOpen(false)}>✕</button>
             </div>
 
-            {/* ===============================
-               MOBILE SLIDE DRAWER
-            ================================ */}
-            {/* MOBILE DRAWER */}
-{profileOpen && (
-  <div className="sm:hidden">
-    {/* Overlay */}
-    <div
-      onClick={() => setProfileOpen(false)}
-      className="fixed inset-0 bg-black/50 z-40"
-    />
+            <div className="p-4 space-y-4">
+              <Link to="/profile" className="block p-3 bg-gray-800 rounded-lg">
+                Profile
+              </Link>
 
-    {/* Drawer */}
-    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl z-50">
-      <div className="flex justify-between items-center p-4 border-b border-gray-700">
-        <h3 className="text-lg font-semibold">Account</h3>
-        <button onClick={() => setProfileOpen(false)}>✕</button>
-      </div>
+              <Link to="/calendar" className="block p-3 bg-gray-800 rounded-lg">
+                Calendar
+              </Link>
 
-      <div className="p-4 space-y-4">
-        <Link to="/profile" className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700">
-          Profile
-        </Link>
-
-        <Link to="/calendar" className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700">
-          Calendar
-        </Link>
-
-        <button
-          onClick={logout}
-          className="w-full text-left p-3 rounded-lg bg-red-600 hover:bg-red-700"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  </div>
-            )}
-        </nav>
-    );
+              <button
+                onClick={logout}
+                className="w-full text-left p-3 bg-red-600 rounded-lg"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
 }
