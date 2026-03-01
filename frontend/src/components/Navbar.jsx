@@ -13,10 +13,10 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
-  /* Close on route change */
-  useEffect(() => {
-    setProfileOpen(false);
-  }, [location.pathname]);
+  // /* Close on route change */
+  // useEffect(() => {
+  //   setProfileOpen(false);
+  // }, [location.pathname]);
 
   /* Close when clicking outside */
   useEffect(() => {
@@ -197,32 +197,26 @@ export default function Navbar() {
             </div>
 
             <div className="p-4 space-y-4">
-
-              <button
-                onClick={() => {
-                  setProfileOpen(false);
-                  navigate("/profile");
-                }}
-                className="block w-full text-left p-3 bg-gray-800 rounded-lg"
+              <Link
+                to="/profile"
+                onClick={() => setProfileOpen(false)}
+                className="block p-3 bg-gray-800 rounded-lg"
               >
                 Profile
-              </button>
+              </Link>
 
-              <button
-                onClick={() => {
-                  setProfileOpen(false);
-                  navigate("/calendar");
-                }}
-                className="block w-full text-left p-3 bg-gray-800 rounded-lg"
+              <Link
+                to="/calendar"
+                onClick={() => setProfileOpen(false)}
+                className="block p-3 bg-gray-800 rounded-lg"
               >
                 Calendar
-              </button>
+              </Link>
 
               <button
                 onClick={() => {
                   setProfileOpen(false);
                   logout();
-                  navigate("/");
                 }}
                 className="w-full text-left p-3 bg-red-600 rounded-lg"
               >
