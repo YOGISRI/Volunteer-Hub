@@ -103,7 +103,7 @@ export default function Navbar() {
 
                 {/* DESKTOP DROPDOWN */}
                 {profileOpen && (
-                  <div className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
+                  <div className="absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
                     <Link
                       to="/profile"
                       onClick={() => setProfileOpen(false)}
