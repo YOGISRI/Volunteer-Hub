@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 import { useState, useEffect, useRef } from "react";
@@ -7,12 +7,21 @@ import api from "../api/axios";
 export default function Navbar() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
     const [unread, setUnread] = useState(0);
     const [profileOpen, setProfileOpen] = useState(false);
     const profileRef = useRef(null);
 
     /* ===============================
-       CLOSE DROPDOWN WHEN CLICK OUTSIDE
+       CLOSE DROPDOWN ON ROUTE CHANGE
+    ================================ */
+    useEffect(() => {
+        setProfileOpen(false);
+    }, [location.pathname]);
+
+    /* ===============================
+       CLOSE WHEN CLICK OUTSIDE
     ================================ */
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -33,6 +42,7 @@ export default function Navbar() {
 
         fetchUnread();
         const interval = setInterval(fetchUnread, 5000);
+
         return () => clearInterval(interval);
     }, [user]);
 
@@ -48,7 +58,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="bg-gray-800 p-4 relative">
+        <nav className="bg-gray-800 p-4 relative z-50">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
 
                 {/* LOGO */}
@@ -61,11 +71,17 @@ export default function Navbar() {
 
                     {user ? (
                         <>
-                            <Link to="/dashboard" className="text-gray-300 hover:text-white transition">
+                            <Link
+                                to="/dashboard"
+                                className="text-gray-300 hover:text-white transition"
+                            >
                                 Dashboard
                             </Link>
 
-                            <Link to="/opportunities" className="text-gray-300 hover:text-white transition">
+                            <Link
+                                to="/opportunities"
+                                className="text-gray-300 hover:text-white transition"
+                            >
                                 Opportunities
                             </Link>
 
@@ -92,7 +108,7 @@ export default function Navbar() {
 
                             <NotificationBell />
 
-                            {/* PROFILE */}
+                            {/* PROFILE AVATAR */}
                             <div className="relative" ref={profileRef}>
                                 <div
                                     onClick={() => setProfileOpen(prev => !prev)}
@@ -103,10 +119,9 @@ export default function Navbar() {
 
                                 {/* DESKTOP DROPDOWN */}
                                 {profileOpen && (
-                                    <div className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
+                                    <div className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700">
                                         <Link
                                             to="/profile"
-                                            onClick={() => setProfileOpen(false)}
                                             className="block px-4 py-2 hover:bg-gray-700 rounded-t-lg"
                                         >
                                             Profile
@@ -114,17 +129,13 @@ export default function Navbar() {
 
                                         <Link
                                             to="/calendar"
-                                            onClick={() => setProfileOpen(false)}
                                             className="block px-4 py-2 hover:bg-gray-700"
                                         >
                                             Calendar
                                         </Link>
 
                                         <button
-                                            onClick={() => {
-                                                setProfileOpen(false);
-                                                logout();
-                                            }}
+                                            onClick={logout}
                                             className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg"
                                         >
                                             Logout
@@ -135,10 +146,17 @@ export default function Navbar() {
                         </>
                     ) : (
                         <>
-                            <Link to="/login" className="text-gray-300 hover:text-white transition">
+                            <Link
+                                to="/login"
+                                className="text-gray-300 hover:text-white transition"
+                            >
                                 Login
                             </Link>
-                            <Link to="/register" className="text-gray-300 hover:text-white transition">
+
+                            <Link
+                                to="/register"
+                                className="text-gray-300 hover:text-white transition"
+                            >
                                 Register
                             </Link>
                         </>
@@ -147,18 +165,18 @@ export default function Navbar() {
             </div>
 
             {/* ===============================
-               MOBILE SLIDE PANEL
+               MOBILE SLIDE DRAWER
             ================================ */}
             {profileOpen && (
                 <>
                     {/* Overlay */}
                     <div
                         onClick={() => setProfileOpen(false)}
-                        className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+                        className="fixed inset-0 bg-black/50 sm:hidden"
                     />
 
-                    {/* Slide Drawer */}
-                    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl z-50 sm:hidden">
+                    {/* Drawer */}
+                    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl sm:hidden transition-transform duration-300">
                         <div className="flex justify-between items-center p-4 border-b border-gray-700">
                             <h3 className="text-lg font-semibold">Account</h3>
                             <button onClick={() => setProfileOpen(false)}>✕</button>
@@ -167,7 +185,6 @@ export default function Navbar() {
                         <div className="p-4 space-y-4">
                             <Link
                                 to="/profile"
-                                onClick={() => setProfileOpen(false)}
                                 className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
                             >
                                 Profile
@@ -175,17 +192,13 @@ export default function Navbar() {
 
                             <Link
                                 to="/calendar"
-                                onClick={() => setProfileOpen(false)}
                                 className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
                             >
                                 Calendar
                             </Link>
 
                             <button
-                                onClick={() => {
-                                    setProfileOpen(false);
-                                    logout();
-                                }}
+                                onClick={logout}
                                 className="w-full text-left p-3 rounded-lg bg-red-600 hover:bg-red-700"
                             >
                                 Logout
