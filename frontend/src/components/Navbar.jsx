@@ -52,7 +52,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-gray-800 p-4 relative z-30">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-3">
 
         {/* Logo */}
         <h1 className="text-xl font-bold">
@@ -60,7 +60,7 @@ export default function Navbar() {
         </h1>
 
         {/* Menu */}
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 text-sm">
 
           {user ? (
             <>
@@ -74,7 +74,7 @@ export default function Navbar() {
 
               <button
                 onClick={() => navigate("/chat")}
-                className="relative px-4 py-2 bg-indigo-600 rounded-lg text-white"
+                className="relative px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 rounded-lg text-white text-xs sm:text-sm"
               >
                 Community Chat
                 {unread > 0 && (
