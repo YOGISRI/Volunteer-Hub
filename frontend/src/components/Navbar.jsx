@@ -122,7 +122,7 @@ export default function Navbar() {
     {/* Overlay */}
     <div
       onClick={() => setProfileOpen(false)}
-      className="fixed inset-0 bg-black/50 sm:hidden z-40"
+      className="hidden sm:block absolute right-0 mt-2 w-44 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50"
     />
 
     {/* Drawer */}
@@ -182,45 +182,40 @@ export default function Navbar() {
             {/* ===============================
                MOBILE SLIDE DRAWER
             ================================ */}
-            {profileOpen && (
-                <>
-                    {/* Overlay */}
-                    <div
-                        onClick={() => setProfileOpen(false)}
-                        className="fixed inset-0 bg-black/50 sm:hidden"
-                    />
+            {/* MOBILE DRAWER */}
+{profileOpen && (
+  <div className="sm:hidden">
+    {/* Overlay */}
+    <div
+      onClick={() => setProfileOpen(false)}
+      className="fixed inset-0 bg-black/50 z-40"
+    />
 
-                    {/* Drawer */}
-                    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl sm:hidden transition-transform duration-300">
-                        <div className="flex justify-between items-center p-4 border-b border-gray-700">
-                            <h3 className="text-lg font-semibold">Account</h3>
-                            <button onClick={() => setProfileOpen(false)}>✕</button>
-                        </div>
+    {/* Drawer */}
+    <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 shadow-2xl z-50">
+      <div className="flex justify-between items-center p-4 border-b border-gray-700">
+        <h3 className="text-lg font-semibold">Account</h3>
+        <button onClick={() => setProfileOpen(false)}>✕</button>
+      </div>
 
-                        <div className="p-4 space-y-4">
-                            <Link
-                                to="/profile"
-                                className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
-                            >
-                                Profile
-                            </Link>
+      <div className="p-4 space-y-4">
+        <Link to="/profile" className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700">
+          Profile
+        </Link>
 
-                            <Link
-                                to="/calendar"
-                                className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700"
-                            >
-                                Calendar
-                            </Link>
+        <Link to="/calendar" className="block p-3 rounded-lg bg-gray-800 hover:bg-gray-700">
+          Calendar
+        </Link>
 
-                            <button
-                                onClick={logout}
-                                className="w-full text-left p-3 rounded-lg bg-red-600 hover:bg-red-700"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </>
+        <button
+          onClick={logout}
+          className="w-full text-left p-3 rounded-lg bg-red-600 hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
             )}
         </nav>
     );
