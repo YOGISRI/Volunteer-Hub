@@ -13,10 +13,10 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
-  // /* Close on route change */
-  // useEffect(() => {
-  //   setProfileOpen(false);
-  // }, [location.pathname]);
+  /* Close on route change */
+  useEffect(() => {
+    setProfileOpen(false);
+  }, [location.pathname]);
 
   /* Close when clicking outside */
   useEffect(() => {
