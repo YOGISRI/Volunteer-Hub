@@ -82,7 +82,7 @@ export default function OrgDashboard() {
             </button>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mt-6">
                 <StatCard title="Opportunities" value={opportunitiesCount} color="text-blue-400" />
                 <StatCard title="Applicants" value={totalApplicants} color="text-purple-400" />
                 <StatCard title="Approved" value={approved} color="text-green-400" />
